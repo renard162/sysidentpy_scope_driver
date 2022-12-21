@@ -4,20 +4,24 @@
 // #include <string.h>
 // #include <math.h>
 
+#define SIGNAL_PIN 13
+#define ADC_PIN A0
+
 char messageFlag = 'O';
 int messageCounter = 0;
 char cmd;
 char codedSignal[2];
 char codedTime[5];
 int signalPeriod;
+char codedSample[2];
 int signalCount = 0;
 unsigned char injectedSignal[32];
 unsigned char collectedSamples[256];
 
 void setup() {
   Serial.begin(9600);
-  pinMode(13, OUTPUT);
-  digitalWrite(13, LOW);
+  pinMode(SIGNAL_PIN, OUTPUT);
+  digitalWrite(SIGNAL_PIN, LOW);
 }
 
 
@@ -69,12 +73,12 @@ void decodeTime() {
 
 void collectSamples() {
   for( int i = 0; i < (signalCount * 8); i++ ) {
-    collectedSamples[i] = analogRead(A0);
+    collectedSamples[i] = analogRead(ADC_PIN);
     if( injectedSignal[ i >> 3 ] & (0x80 >> (i & 7)) ) {
-      digitalWrite(13, HIGH);
+      digitalWrite(SIGNAL_PIN, HIGH);
     }
     else {
-      digitalWrite(13, LOW);
+      digitalWrite(SIGNAL_PIN, LOW);
     }
     delay(signalPeriod);
   }
@@ -101,6 +105,7 @@ void loop() {
     decodeSignal();
   }
   if (messageFlag == 'X') {
+    delay(0.1);
     Serial.flush();
     collectSamples();
   }
