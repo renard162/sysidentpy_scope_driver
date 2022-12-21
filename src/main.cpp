@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include <stdio.h>
 #include <stdlib.h>
-// #include <string.h>
-// #include <math.h>
 
 #define SIGNAL_PIN 13
 #define ADC_PIN A0
@@ -14,6 +12,7 @@ char codedSignal[2];
 char codedTime[5];
 int signalPeriod;
 int signalCount = 0;
+int samplesCount = 0;
 char tempCodedSample[2];
 unsigned char injectedSignal[32];
 unsigned char collectedSamples[256];
@@ -38,10 +37,12 @@ void setFlag(char rawCmd) {
     messageFlag = 'S';
     messageCounter = 1;
     signalCount = 0;
+    samplesCount = 0;
   }
   else if (rawCmd == 'X') {
     messageFlag = 'X';
     messageCounter = 0;
+    samplesCount = signalCount * 8;
   }
 }
 
@@ -78,20 +79,8 @@ void decodeTime() {
 
 
 
-void encodeSamples() {
-  int i_coded;
-  for (int i = 0; i < signalCount; i++) {
-    sprintf(tempCodedSample, "%x", collectedSamples[i]);
-    for (int j = 0; j < 2; j++){
-      i_coded = i*2 + j;
-      codedSamples[i_coded] = tempCodedSample[j];
-    }
-  }
-}
-
-
 void collectSamples() {
-  for( int i = 0; i < (signalCount * 8); i++ ) {
+  for( int i = 0; i < samplesCount; i++ ) {
     collectedSamples[i] = analogRead(ADC_PIN);
     if( injectedSignal[ i >> 3 ] & (0x80 >> (i & 7)) ) {
       digitalWrite(SIGNAL_PIN, HIGH);
@@ -101,6 +90,27 @@ void collectSamples() {
     }
     delay(signalPeriod);
   }
+}
+
+
+void encodeSamples() {
+  int i_coded;
+  for (int i = 0; i < samplesCount; i++) {
+    sprintf(tempCodedSample, "%x", collectedSamples[i]);
+    for (int j = 0; j < 2; j++) {
+      i_coded = i*2 + j;
+      codedSamples[i_coded] = tempCodedSample[j];
+    }
+  }
+}
+
+
+void sendSampledData() {
+  Serial.print("T");
+  for (int i = 0; i < (samplesCount * 2); i++) {
+    Serial.print(codedSamples[i]);
+  }
+  Serial.print("X");
   messageFlag = 'O';
 }
 
@@ -124,8 +134,11 @@ void loop() {
     decodeSignal();
   }
   if (messageFlag == 'X') {
-    delay(0.1);
     Serial.flush();
+    delay(0.1);
     collectSamples();
+    delay(0.1);
+    encodeSamples();
+    sendSampledData();
   }
 }
