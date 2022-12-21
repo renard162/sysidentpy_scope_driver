@@ -10,7 +10,7 @@ char cmd;
 char codedSignal[2];
 char codedTime[5];
 int signalPeriod;
-int signalCount;
+int signalCount = 0;
 unsigned char injectedSignal[32];
 unsigned char collectedSamples[256];
 
@@ -38,10 +38,10 @@ int decodeHexedSignal(char *hex) {
 
 
 void decodeSignal() {
-  injectedSignal[messageCounter] = decodeHexedSignal(codedSignal);
-  Serial.print(injectedSignal[messageCounter]);
+  injectedSignal[signalCount] = decodeHexedSignal(codedSignal);
+  Serial.print(injectedSignal[signalCount]);
   Serial.println();
-  messageCounter++;
+  signalCount++;
   messageCounter = 1;
 }
 
@@ -77,8 +77,16 @@ void decodeTime() {
 }
 
 
-void executeExperiment() {
-
+void collectSamples() {
+  for( int i = 0; i < (signalCount * 8); i++ ) {
+    if( injectedSignal[ i >> 3 ] & (0x80 >> (i & 7)) ) {
+      digitalWrite(13, HIGH);
+    }
+    else {
+      digitalWrite(13, LOW);
+    }
+    delay(signalPeriod);
+  }
 }
 
 
@@ -87,14 +95,14 @@ void loop() {
   cmd = Serial.read();
   setFlag(cmd);
   if ((messageFlag == 'T') && (cmd >= '0' && cmd <= '9') && (messageCounter >= 0)) {
-    codedTime[messageCounter] = cmd;
+    codedTime[3-messageCounter] = cmd;
     messageCounter--;
   }
   if ((messageFlag == 'T') && (messageCounter == -1)) {
     decodeTime();
   }
   if ((messageFlag == 'S') && ((cmd >= '0' && cmd <= '9') || (cmd >= 'a' && cmd <= 'f')) && (messageCounter >= 0)) {
-    codedSignal[messageCounter] = cmd;
+    codedSignal[2-messageCounter] = cmd;
     messageCounter--;
   }
   if ((messageFlag == 'S') && (messageCounter == -1)) {
@@ -102,12 +110,6 @@ void loop() {
   }
   if (messageFlag == 'Z') {
     Serial.flush();
-    executeExperiment()
+    collectSamples();
   }
-  // if (cmd == 'l') {
-  //   digitalWrite(13, HIGH); 
-  // }
-  // else if (cmd == 'd') {
-  //   digitalWrite(13, LOW);
-  // }
 }
