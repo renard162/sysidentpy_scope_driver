@@ -39,8 +39,6 @@ int decodeHexedSignal(char *hex) {
 
 void decodeSignal() {
   injectedSignal[signalCount] = decodeHexedSignal(codedSignal);
-  Serial.print(injectedSignal[signalCount]);
-  Serial.println();
   signalCount++;
   messageCounter = 1;
 }
@@ -50,21 +48,15 @@ void setFlag(char rawCmd) {
   if (rawCmd == 'T') {
     messageFlag = 'T';
     messageCounter = 3;
-    Serial.print(rawCmd);
-    Serial.println();
   }
   else if (rawCmd == 'S') {
     messageFlag = 'S';
     messageCounter = 1;
     signalCount = 0;
-    Serial.print(rawCmd);
-    Serial.println();
   }
   else if (rawCmd == 'X') {
     messageFlag = 'X';
     messageCounter = 0;
-    Serial.print(rawCmd);
-    Serial.println();
   }
 }
 
@@ -72,8 +64,6 @@ void setFlag(char rawCmd) {
 void decodeTime() {
   codedTime[4] = '\0';
   signalPeriod = atoi(codedTime);
-  Serial.print(signalPeriod);
-  Serial.println();
 }
 
 
@@ -86,8 +76,6 @@ void collectSamples() {
     else {
       digitalWrite(13, LOW);
     }
-    Serial.print(collectedSamples[i]);
-    Serial.println();
     delay(signalPeriod);
   }
   messageFlag = 'O';
