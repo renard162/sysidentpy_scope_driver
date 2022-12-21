@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SIGNAL_PIN 13
+#define SIGNAL_PIN 8
 #define ADC_PIN A0
 
 char messageFlag = 'O';
