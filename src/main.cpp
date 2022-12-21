@@ -4,6 +4,7 @@
 
 #define SIGNAL_PIN 8
 #define ADC_PIN A0
+#define MAX_SAMPLES 512
 
 char messageFlag = 'O';
 int messageCounter = 0;
@@ -14,9 +15,9 @@ int signalPeriod;
 int signalCount = 0;
 int samplesCount = 0;
 char tempCodedSample[2];
-unsigned char injectedSignal[32];
-unsigned char collectedSamples[256];
-char codedSamples[512];
+unsigned char injectedSignal[MAX_SAMPLES/8];
+unsigned char collectedSamples[MAX_SAMPLES];
+char codedSamples[MAX_SAMPLES*2];
 
 
 
