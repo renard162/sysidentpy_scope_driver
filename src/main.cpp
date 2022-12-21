@@ -79,13 +79,13 @@ void decodeTime() {
 
 void collectSamples() {
   for( int i = 0; i < (signalCount * 8); i++ ) {
+    collectedSamples[i] = analogRead(A0);
     if( injectedSignal[ i >> 3 ] & (0x80 >> (i & 7)) ) {
       digitalWrite(13, HIGH);
     }
     else {
       digitalWrite(13, LOW);
     }
-    collectedSamples[i] = analogRead(A0);
     Serial.print(collectedSamples[i]);
     Serial.println();
     delay(signalPeriod);
@@ -106,7 +106,7 @@ void loop() {
     decodeTime();
   }
   if ((messageFlag == 'S') && ((cmd >= '0' && cmd <= '9') || (cmd >= 'a' && cmd <= 'f')) && (messageCounter >= 0)) {
-    codedSignal[2-messageCounter] = cmd;
+    codedSignal[1-messageCounter] = cmd;
     messageCounter--;
   }
   if ((messageFlag == 'S') && (messageCounter == -1)) {
