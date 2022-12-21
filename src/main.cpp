@@ -60,8 +60,8 @@ void setFlag(char rawCmd) {
     Serial.print(rawCmd);
     Serial.println();
   }
-  else if (rawCmd == 'Z') {
-    messageFlag = 'Z';
+  else if (rawCmd == 'X') {
+    messageFlag = 'X';
     messageCounter = 0;
     Serial.print(rawCmd);
     Serial.println();
@@ -85,8 +85,12 @@ void collectSamples() {
     else {
       digitalWrite(13, LOW);
     }
+    collectedSamples[i] = analogRead(A0);
+    Serial.print(collectedSamples[i]);
+    Serial.println();
     delay(signalPeriod);
   }
+  messageFlag = 'O';
 }
 
 
@@ -108,7 +112,7 @@ void loop() {
   if ((messageFlag == 'S') && (messageCounter == -1)) {
     decodeSignal();
   }
-  if (messageFlag == 'Z') {
+  if (messageFlag == 'X') {
     Serial.flush();
     collectSamples();
   }
