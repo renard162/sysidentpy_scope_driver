@@ -13,16 +13,38 @@ char cmd;
 char codedSignal[2];
 char codedTime[5];
 int signalPeriod;
-char codedSample[2];
 int signalCount = 0;
+char tempCodedSample[2];
 unsigned char injectedSignal[32];
 unsigned char collectedSamples[256];
+char codedSamples[512];
+
+
 
 void setup() {
   Serial.begin(9600);
   pinMode(SIGNAL_PIN, OUTPUT);
   digitalWrite(SIGNAL_PIN, LOW);
 }
+
+
+
+void setFlag(char rawCmd) {
+  if (rawCmd == 'T') {
+    messageFlag = 'T';
+    messageCounter = 3;
+  }
+  else if (rawCmd == 'S') {
+    messageFlag = 'S';
+    messageCounter = 1;
+    signalCount = 0;
+  }
+  else if (rawCmd == 'X') {
+    messageFlag = 'X';
+    messageCounter = 0;
+  }
+}
+
 
 
 int decodeHexedSignal(char *hex) {
@@ -48,26 +70,23 @@ void decodeSignal() {
 }
 
 
-void setFlag(char rawCmd) {
-  if (rawCmd == 'T') {
-    messageFlag = 'T';
-    messageCounter = 3;
-  }
-  else if (rawCmd == 'S') {
-    messageFlag = 'S';
-    messageCounter = 1;
-    signalCount = 0;
-  }
-  else if (rawCmd == 'X') {
-    messageFlag = 'X';
-    messageCounter = 0;
-  }
-}
-
 
 void decodeTime() {
   codedTime[4] = '\0';
   signalPeriod = atoi(codedTime);
+}
+
+
+
+void encodeSamples() {
+  int i_coded;
+  for (int i = 0; i < signalCount; i++) {
+    sprintf(tempCodedSample, "%x", collectedSamples[i]);
+    for (int j = 0; j < 2; j++){
+      i_coded = i*2 + j;
+      codedSamples[i_coded] = tempCodedSample[j];
+    }
+  }
 }
 
 
