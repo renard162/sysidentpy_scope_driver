@@ -5,7 +5,7 @@
 #define LED_PIN 13
 #define SIGNAL_PIN 8
 #define ADC_PIN A0
-#define MAX_SAMPLES 512
+#define MAX_SAMPLES 1024
 
 char messageFlag = 'O';
 int messageCounter = 0;
@@ -18,7 +18,6 @@ int samplesCount = 0;
 char tempCodedSample[2];
 unsigned char injectedSignal[MAX_SAMPLES/8];
 unsigned char collectedSamples[MAX_SAMPLES];
-char codedSamples[MAX_SAMPLES*2];
 
 
 
@@ -99,22 +98,11 @@ void collectSamples() {
 }
 
 
-void encodeSamples() {
-  int i_coded;
-  for (int i = 0; i < samplesCount; i++) {
-    sprintf(tempCodedSample, "%x", collectedSamples[i]);
-    for (int j = 0; j < 2; j++) {
-      i_coded = i*2 + j;
-      codedSamples[i_coded] = tempCodedSample[j];
-    }
-  }
-}
-
-
 void sendSampledData() {
   Serial.print("T");
-  for (int i = 0; i < (samplesCount * 2); i++) {
-    Serial.print(codedSamples[i]);
+  for (int i = 0; i < samplesCount; i++) {
+    sprintf(tempCodedSample, "%x", collectedSamples[i]);
+    Serial.print(tempCodedSample);
   }
   Serial.print("X");
   messageFlag = 'O';
@@ -144,7 +132,6 @@ void loop() {
     delay(0.1);
     collectSamples();
     delay(0.1);
-    encodeSamples();
     sendSampledData();
   }
 }
