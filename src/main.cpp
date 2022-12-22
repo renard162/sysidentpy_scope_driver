@@ -101,7 +101,7 @@ void collectSamples() {
 void sendSampledData() {
   Serial.print("T");
   for (int i = 0; i < samplesCount; i++) {
-    sprintf(tempCodedSample, "%x", collectedSamples[i]);
+    sprintf(tempCodedSample, "%02x", collectedSamples[i]);
     Serial.print(tempCodedSample);
   }
   Serial.print("X");
