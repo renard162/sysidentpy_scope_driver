@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define LED_PIN 13
 #define SIGNAL_PIN 8
 #define ADC_PIN A0
 #define MAX_SAMPLES 512
@@ -25,6 +26,8 @@ void setup() {
   Serial.begin(9600);
   pinMode(SIGNAL_PIN, OUTPUT);
   digitalWrite(SIGNAL_PIN, LOW);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
 }
 
 
@@ -81,6 +84,7 @@ void decodeTime() {
 
 
 void collectSamples() {
+  digitalWrite(LED_PIN, HIGH);
   for( int i = 0; i < samplesCount; i++ ) {
     collectedSamples[i] = analogRead(ADC_PIN);
     if( injectedSignal[ i >> 3 ] & (0x80 >> (i & 7)) ) {
@@ -91,6 +95,7 @@ void collectSamples() {
     }
     delay(signalPeriod);
   }
+  digitalWrite(LED_PIN, LOW);
 }
 
 
