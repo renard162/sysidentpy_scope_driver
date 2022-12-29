@@ -5,7 +5,7 @@
 #define LED_PIN 13
 #define SIGNAL_PIN 8
 #define ADC_PIN A0
-#define MAX_SAMPLES 1024
+#define MAX_SAMPLES 768
 
 char messageFlag = 'O';
 int messageCounter = 0;
@@ -16,8 +16,8 @@ int signalPeriod;
 int signalCount = 0;
 int samplesCount = 0;
 char tempCodedSample[2];
-unsigned char injectedSignal[MAX_SAMPLES/8];
-unsigned char collectedSamples[MAX_SAMPLES];
+unsigned char injectedSignal[MAX_SAMPLES/16];
+unsigned int collectedSamples[MAX_SAMPLES];
 
 
 
@@ -85,13 +85,13 @@ void decodeTime() {
 void collectSamples() {
   digitalWrite(LED_PIN, HIGH);
   for( int i = 0; i < samplesCount; i++ ) {
-    collectedSamples[i] = analogRead(ADC_PIN);
     if( injectedSignal[ i >> 3 ] & (0x80 >> (i & 7)) ) {
       digitalWrite(SIGNAL_PIN, HIGH);
     }
     else {
       digitalWrite(SIGNAL_PIN, LOW);
     }
+    collectedSamples[i] = analogRead(ADC_PIN);
     delay(signalPeriod);
   }
   digitalWrite(LED_PIN, LOW);
@@ -101,7 +101,7 @@ void collectSamples() {
 void sendSampledData() {
   Serial.print("T");
   for (int i = 0; i < samplesCount; i++) {
-    sprintf(tempCodedSample, "%02x", collectedSamples[i]);
+    sprintf(tempCodedSample, "%03x", collectedSamples[i]);
     Serial.print(tempCodedSample);
   }
   Serial.print("X");
